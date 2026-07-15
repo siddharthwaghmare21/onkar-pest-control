@@ -1,0 +1,7 @@
+"use client";
+import Link from "next/link";
+import { Menu, Phone, ShieldCheck, X } from "lucide-react";
+import { useState } from "react";
+import { company } from "@/data/company";
+const links = [["Home","/"],["About","/about"],["Services","/services"],["Gallery","/gallery"],["Reviews","/reviews"],["Contact","/contact"]];
+export default function SiteHeader(){const[open,setOpen]=useState(false);return <header className="site-header"><div className="utility-bar"><div className="container utility-inner"><span>Serving Sangli and nearby regions</span><a href={`tel:${company.phone}`}><Phone size={14}/> {company.phone}</a></div></div><div className="container nav-wrap"><Link className="brand" href="/" onClick={()=>setOpen(false)}><span className="brand-mark"><ShieldCheck size={25}/></span><span><strong>Onkar Pest Control</strong><small>{company.tagline}</small></span></Link><button className="menu-button" onClick={()=>setOpen(!open)} aria-expanded={open} aria-label="Toggle navigation">{open?<X/>:<Menu/>}</button><nav className={open?"main-nav open":"main-nav"}>{links.map(([label,href])=><Link key={href} href={href} onClick={()=>setOpen(false)}>{label}</Link>)}<Link className="nav-cta" href="/book-service" onClick={()=>setOpen(false)}>Book a Service</Link></nav></div></header>}

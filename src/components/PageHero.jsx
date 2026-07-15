@@ -1,0 +1,1 @@
+export default function PageHero({ eyebrow, title, copy }) { return <section className="page-hero"><div className="container"><div className="section-kicker light">{eyebrow} <span /></div><h1>{title}</h1>{copy && <p>{copy}</p>}</div></section>; }
