@@ -3,6 +3,7 @@ export const company = {
   tagline: "Smart Protection. Safer Spaces.",
   owner: "Onkar Raju Waghmare",
   phone: "8788300933",
+  alternatePhone: "7249738821",
   whatsapp: "918788300933",
   email: "",
   address: "Dr. Babasaheb Ambedkar Nagar, Civil Chowk, Sangli, Maharashtra.",
