@@ -24,3 +24,9 @@ Health check:
 ```text
 GET /api/health
 ```
+
+Active services:
+
+```text
+GET /api/services
+```

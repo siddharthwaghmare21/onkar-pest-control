@@ -14,6 +14,13 @@ if (!string.IsNullOrWhiteSpace(supabaseConnection))
 }
 var app = builder.Build();
 
+if (!string.IsNullOrWhiteSpace(supabaseConnection))
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await ServiceCatalogSeeder.SeedAsync(db);
+}
+
 // Configure the HTTP request pipeline.
 app.UseAuthorization();
 
