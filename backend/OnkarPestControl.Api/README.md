@@ -30,3 +30,10 @@ Active services:
 ```text
 GET /api/services
 ```
+
+Public form endpoints:
+
+```text
+POST /api/service-requests
+POST /api/contact-messages
+```
