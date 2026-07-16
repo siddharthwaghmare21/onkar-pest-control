@@ -6,6 +6,13 @@ The API currently contains a health endpoint and an optional Supabase PostgreSQL
 
 Set the Supabase connection string through user-secrets or an environment-specific configuration value; never commit real credentials.
 
+Configure locally from the API project directory:
+
+```bash
+dotnet user-secrets set "ConnectionStrings:Supabase" "<your-supabase-postgres-connection-string>"
+dotnet ef migrations add InitialCreate
+```
+
 Run locally:
 
 ```bash
