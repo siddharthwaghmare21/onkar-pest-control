@@ -23,7 +23,7 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
         }
 
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseNpgsql(connection)
+            .UseNpgsql(SupabaseConnectionString.Normalize(connection))
             .Options;
 
         return new AppDbContext(options);

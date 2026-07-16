@@ -10,7 +10,7 @@ builder.Services.AddControllers();
 var supabaseConnection = builder.Configuration.GetConnectionString("Supabase");
 if (!string.IsNullOrWhiteSpace(supabaseConnection))
 {
-    builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(supabaseConnection));
+    builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(SupabaseConnectionString.Normalize(supabaseConnection)));
 }
 var app = builder.Build();
 
