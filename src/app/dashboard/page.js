@@ -101,26 +101,26 @@ export default async function Dashboard() {
           <article className="dashboard-card">
             <ShieldCheck size={25} />
             <span>Customer</span>
-            <h3>{fullName}</h3>
+            <h3>👤 {fullName}</h3>
             <p>{user.email}</p>
             <p>Phone: {phone}</p>
           </article>
           <article className="dashboard-card">
             <CalendarCheck size={25} />
             <span>Bookings</span>
-            <h3>{bookings.length}</h3>
+            <h3>📅 {bookings.length}</h3>
             <p>{activeBookings} active request{activeBookings === 1 ? "" : "s"} linked to this account.</p>
           </article>
           <article className="dashboard-card">
             <Gift size={25} />
             <span>Discounts</span>
-            <h3>Member benefits</h3>
+            <h3>🎁 Member benefits</h3>
             <p>Registered customer discounts and package offers are planned for the pricing phase.</p>
           </article>
           <article className="dashboard-card">
             <Sparkles size={25} />
             <span>Offers</span>
-            <h3>Festival offers</h3>
+            <h3>✨ Festival offers</h3>
             <p>Admin-created offers will appear here once the admin panel phase starts.</p>
           </article>
         </section>
@@ -135,7 +135,7 @@ export default async function Dashboard() {
 
           {!bookingsError && bookings.length === 0 && (
             <div className="dashboard-empty">
-              <h3>No bookings yet</h3>
+              <h3>📝 No bookings yet</h3>
               <p>Book a service while signed in, and your request will show here automatically.</p>
             </div>
           )}

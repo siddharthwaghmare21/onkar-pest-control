@@ -71,49 +71,49 @@ export default async function AdminPage() {
           <article className="dashboard-card">
             <Inbox size={25} />
             <span>Requests</span>
-            <h3>Bookings</h3>
+            <h3>📋 Bookings</h3>
             <p>View, filter, assign and update customer service request status.</p>
           </article>
           <article className="dashboard-card">
             <Gift size={25} />
             <span>Offers</span>
-            <h3>Create offers</h3>
+            <h3>🎁 Create offers</h3>
             <p>Add, edit and delete festival or seasonal offers.</p>
           </article>
           <article className="dashboard-card">
             <Images size={25} />
             <span>Gallery</span>
-            <h3>Media</h3>
+            <h3>🖼️ Media</h3>
             <p>Manage pest control location photos and service visuals.</p>
           </article>
           <article className="dashboard-card">
             <CalendarClock size={25} />
             <span>Schedule</span>
-            <h3>Visits</h3>
+            <h3>🗓️ Visits</h3>
             <p>Track upcoming calls, confirmed visits and completed work.</p>
           </article>
           <article className="dashboard-card">
             <BarChart3 size={25} />
             <span>Reports</span>
-            <h3>Overview</h3>
+            <h3>📊 Overview</h3>
             <p>See lead volume, active bookings and conversion summary.</p>
           </article>
           <article className="dashboard-card">
             <Megaphone size={25} />
             <span>Lead Sources</span>
-            <h3>Justdial</h3>
+            <h3>📣 Justdial</h3>
             <p>Track Website, WhatsApp, phone, Justdial and referral enquiries separately.</p>
           </article>
           <article className="dashboard-card">
             <CreditCard size={25} />
             <span>Billing</span>
-            <h3>Accounts</h3>
+            <h3>💳 Accounts</h3>
             <p>Plan revenue, advance, balance, payment mode and invoice tracking.</p>
           </article>
           <article className="dashboard-card">
             <ShieldCheck size={25} />
             <span>Access</span>
-            <h3>Roles</h3>
+            <h3>🔐 Roles</h3>
             <p>Keep admin controls separate from customer dashboard access.</p>
           </article>
         </section>

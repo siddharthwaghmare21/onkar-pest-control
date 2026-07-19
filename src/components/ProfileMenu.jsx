@@ -66,8 +66,7 @@ export default function ProfileMenu({ onNavigate }) {
             </span>
           </div>
           <Link href={accountPath} onClick={() => { setOpen(false); onNavigate?.(); }}>Open Dashboard</Link>
-          <button type="button" disabled>Update Profile - coming next</button>
-          <button type="button" disabled>Delete Account - secure phase</button>
+          <Link href="/profile" onClick={() => { setOpen(false); onNavigate?.(); }}>Update / Delete Profile</Link>
           <button type="button" onClick={() => signOutAndGo("/login")}>Login with another account</button>
           <button type="button" onClick={() => signOutAndGo("/register")}>Create new account</button>
         </div>

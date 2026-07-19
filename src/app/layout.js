@@ -1,4 +1,5 @@
 import "./globals.css";
+import KeyboardShortcuts from "@/components/KeyboardShortcuts";
 import ScrollTopButton from "@/components/ScrollTopButton";
 import ThemeProvider from "@/components/ThemeProvider";
 
@@ -13,6 +14,7 @@ export default function RootLayout({ children }) {
       <body>
         <ThemeProvider>
           {children}
+          <KeyboardShortcuts />
           <ScrollTopButton />
         </ThemeProvider>
       </body>
