@@ -11,6 +11,8 @@ public class CreateServiceRequestRequest
     [Required, StringLength(80)] public string City { get; set; } = string.Empty;
     [Required, RegularExpression("^[0-9]{6}$")] public string Pincode { get; set; } = string.Empty;
     public Guid? ServiceId { get; set; }
+    [StringLength(80)] public string? ServiceName { get; set; }
+    [StringLength(40)] public string? LeadSource { get; set; }
     [Required, StringLength(50)] public string PropertyType { get; set; } = string.Empty;
     public DateOnly? PreferredDate { get; set; }
     [StringLength(80)] public string? PreferredTime { get; set; }

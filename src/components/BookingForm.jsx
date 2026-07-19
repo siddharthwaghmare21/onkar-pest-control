@@ -17,8 +17,7 @@ export default function BookingForm() {
     const body = Object.fromEntries(new FormData(form).entries());
     body.preferredDate = body.preferredDate || null;
     body.serviceId = null;
-    body.problemDescription = `${body.problemDescription}\n\nSelected service: ${body.serviceName}`;
-    delete body.serviceName;
+    body.leadSource = "Website";
 
     try {
       const headers = { "Content-Type": "application/json" };

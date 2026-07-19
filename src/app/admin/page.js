@@ -28,6 +28,8 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
+const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5157";
+
 const menuItems = [
   ["Dashboard", LayoutDashboard],
   ["Bookings", Inbox],
@@ -37,13 +39,6 @@ const menuItems = [
   ["Gallery", Images],
   ["Reports", BarChart3],
   ["Settings", Settings],
-];
-
-const stats = [
-  { label: "Total Bookings", value: "24", note: "+5 from last month", icon: Inbox, featured: true, emoji: "📋" },
-  { label: "New Enquiries", value: "10", note: "Website + calls", icon: MessageSquareText, emoji: "💬" },
-  { label: "Confirmed Visits", value: "12", note: "This week", icon: CalendarClock, emoji: "🗓️" },
-  { label: "Pending Payments", value: "2", note: "Follow-up needed", icon: CreditCard, emoji: "💳" },
 ];
 
 const sourceRows = [
@@ -68,6 +63,63 @@ const offerRows = [
 
 function statusClass(status) {
   return `admin-status ${status.toLowerCase().replaceAll(" ", "-")}`;
+}
+
+async function getAdminRequests(supabase) {
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+
+  if (!token) return { requests: [], error: "Admin session token is not available yet." };
+
+  try {
+    const response = await fetch(`${api}/api/service-requests/admin`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    });
+
+    if (!response.ok) return { requests: [], error: "Could not load admin bookings from API." };
+    return { requests: await response.json(), error: "" };
+  } catch {
+    return { requests: [], error: "Backend API is not running or is not reachable." };
+  }
+}
+
+function getAdminStats(requests) {
+  const pendingPayments = requests.filter((request) => request.paymentStatus !== "Paid").length;
+
+  return [
+    { label: "Total Bookings", value: String(requests.length || 24), note: requests.length ? "Live booking records" : "+5 demo records", icon: Inbox, featured: true, emoji: "📋" },
+    { label: "New Enquiries", value: String(requests.filter((request) => request.status === "New").length || 10), note: "Website + calls", icon: MessageSquareText, emoji: "💬" },
+    { label: "Confirmed Visits", value: String(requests.filter((request) => request.status === "Confirmed").length || 12), note: "This week", icon: CalendarClock, emoji: "🗓️" },
+    { label: "Pending Payments", value: String(requests.length ? pendingPayments : 2), note: "Follow-up needed", icon: CreditCard, emoji: "💳" },
+  ];
+}
+
+function getSourceRows(requests) {
+  if (!requests.length) return sourceRows;
+
+  const counts = requests.reduce((result, request) => {
+    const source = request.leadSource || "Other";
+    result[source] = (result[source] || 0) + 1;
+    return result;
+  }, {});
+
+  return Object.entries(counts).map(([source, count]) => [
+    source,
+    count,
+    `${Math.max(8, Math.round((count / requests.length) * 100))}%`,
+  ]);
+}
+
+function getBookingRows(requests) {
+  if (!requests.length) return bookingRows;
+
+  return requests.slice(0, 6).map((request) => [
+    request.serviceName || "Service request",
+    request.fullName,
+    request.leadSource,
+    request.status,
+  ]);
 }
 
 export default async function AdminPage() {
@@ -100,6 +152,11 @@ export default async function AdminPage() {
 
   const adminName = user.user_metadata?.full_name || "Admin";
   const initials = adminName.slice(0, 1).toUpperCase();
+  const { requests, error: adminDataError } = await getAdminRequests(supabase);
+  const stats = getAdminStats(requests);
+  const visibleSourceRows = getSourceRows(requests);
+  const visibleBookingRows = getBookingRows(requests);
+  const collectedAmount = requests.reduce((total, request) => total + (request.advancePaid || 0), 0);
 
   return (
     <main className="admin-workspace">
@@ -164,13 +221,19 @@ export default async function AdminPage() {
         </section>
 
         <section className="admin-content-grid">
+          {adminDataError && (
+            <article className="admin-panel wide">
+              <div className="form-message error" role="alert">{adminDataError}</div>
+            </article>
+          )}
+
           <article className="admin-panel wide" id="reports">
             <div className="admin-panel-head">
               <h2>Lead Analytics 📊</h2>
               <span>This month</span>
             </div>
             <div className="lead-chart" aria-label="Lead source chart">
-              {sourceRows.map(([label, count, percent]) => (
+              {visibleSourceRows.map(([label, count, percent]) => (
                 <div className="lead-chart-row" key={label}>
                   <span>{label}</span>
                   <div><i style={{ width: percent }} /></div>
@@ -186,7 +249,7 @@ export default async function AdminPage() {
               <CreditCard size={20} />
             </div>
             <div className="revenue-meter">
-              <strong>₹42,500</strong>
+              <strong>₹{collectedAmount ? collectedAmount.toLocaleString("en-IN") : "42,500"}</strong>
               <span>Collected</span>
             </div>
             <p className="admin-muted">Demo numbers for now. Actual billing will connect after accounting fields are added.</p>
@@ -208,7 +271,7 @@ export default async function AdminPage() {
               <a href="#bookings">View all</a>
             </div>
             <div className="admin-table">
-              {bookingRows.map(([service, customer, source, status]) => (
+              {visibleBookingRows.map(([service, customer, source, status]) => (
                 <div className="admin-table-row" key={`${service}-${customer}`}>
                   <span>{service}</span>
                   <span>{customer}</span>

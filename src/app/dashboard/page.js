@@ -36,8 +36,10 @@ async function getCustomerBookings(supabase) {
   }
 }
 
-function getServiceLabel(problemDescription) {
+function getServiceLabel(booking) {
   const marker = "Selected service:";
+  if (booking.serviceName) return booking.serviceName;
+  const problemDescription = booking.problemDescription;
   if (!problemDescription?.includes(marker)) return "Service request";
   return problemDescription.split(marker).at(-1).trim();
 }
@@ -145,7 +147,7 @@ export default async function Dashboard() {
               <article className="booking-history-item" key={booking.id}>
                 <div>
                   <span>{booking.status}</span>
-                  <h3>{getServiceLabel(booking.problemDescription)}</h3>
+                  <h3>{getServiceLabel(booking)}</h3>
                   <p>{booking.propertyType} - {booking.preferredDate || "Date pending"} - {booking.preferredTime || "Time pending"}</p>
                 </div>
                 <small>{new Date(booking.createdAtUtc).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</small>

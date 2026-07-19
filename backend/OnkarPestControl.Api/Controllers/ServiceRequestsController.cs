@@ -1,4 +1,6 @@
 using System.Security.Claims;
+using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OnkarPestControl.Api.Contracts.ServiceRequests;
@@ -12,6 +14,56 @@ namespace OnkarPestControl.Api.Controllers;
 [Route("api/service-requests")]
 public class ServiceRequestsController(AppDbContext db) : ControllerBase
 {
+    [Authorize]
+    [HttpGet("admin")]
+    public async Task<IActionResult> AdminList(CancellationToken cancellationToken)
+    {
+        if (!IsAdminUser())
+            return Forbid();
+
+        var requests = (await db.ServiceRequests
+            .OrderByDescending(request => request.CreatedAtUtc)
+            .ToListAsync(cancellationToken))
+            .Select(ToAdminResponse)
+            .ToList();
+
+        return Ok(requests);
+    }
+
+    [Authorize]
+    [HttpPatch("admin/{id:guid}")]
+    public async Task<IActionResult> AdminUpdate(Guid id, UpdateServiceRequestAdminRequest request, CancellationToken cancellationToken)
+    {
+        if (!IsAdminUser())
+            return Forbid();
+
+        var entity = await db.ServiceRequests.FindAsync([id], cancellationToken);
+        if (entity is null)
+            return NotFound(new { message = "Service request not found." });
+
+        if (!string.IsNullOrWhiteSpace(request.Status))
+        {
+            if (!Enum.TryParse<ServiceRequestStatus>(request.Status, true, out var status))
+                return BadRequest(new { message = "Invalid service request status." });
+
+            entity.Status = status;
+        }
+
+        entity.ServiceName = CleanOptional(request.ServiceName) ?? entity.ServiceName;
+        entity.LeadSource = CleanOptional(request.LeadSource) ?? entity.LeadSource;
+        entity.AdminNote = CleanOptional(request.AdminNote) ?? entity.AdminNote;
+        entity.ServiceAmount = request.ServiceAmount ?? entity.ServiceAmount;
+        entity.AdvancePaid = request.AdvancePaid ?? entity.AdvancePaid;
+        entity.PaymentStatus = CleanOptional(request.PaymentStatus) ?? entity.PaymentStatus;
+        entity.PaymentMode = CleanOptional(request.PaymentMode) ?? entity.PaymentMode;
+        entity.InvoiceNumber = CleanOptional(request.InvoiceNumber) ?? entity.InvoiceNumber;
+        entity.CompletedAtUtc = request.CompletedAtUtc ?? entity.CompletedAtUtc;
+        entity.UpdatedAtUtc = DateTime.UtcNow;
+
+        await db.SaveChangesAsync(cancellationToken);
+        return Ok(ToAdminResponse(entity));
+    }
+
     [HttpGet("my")]
     public async Task<IActionResult> My(CancellationToken cancellationToken)
     {
@@ -25,11 +77,14 @@ public class ServiceRequestsController(AppDbContext db) : ControllerBase
             .Select(request => new ServiceRequestSummaryResponse
             {
                 Id = request.Id,
+                ServiceName = request.ServiceName,
+                LeadSource = request.LeadSource,
                 PropertyType = request.PropertyType,
                 PreferredDate = request.PreferredDate,
                 PreferredTime = request.PreferredTime,
                 ProblemDescription = request.ProblemDescription,
                 Status = request.Status.ToString(),
+                PaymentStatus = request.PaymentStatus,
                 CreatedAtUtc = request.CreatedAtUtc
             })
             .ToListAsync(cancellationToken);
@@ -49,7 +104,8 @@ public class ServiceRequestsController(AppDbContext db) : ControllerBase
         {
             FullName = request.FullName.Trim(), Phone = request.Phone.Trim(), Email = request.Email?.Trim(),
             Address = request.Address.Trim(), City = request.City.Trim(), Pincode = request.Pincode.Trim(),
-            ServiceId = request.ServiceId, PropertyType = request.PropertyType.Trim(), PreferredDate = request.PreferredDate,
+            ServiceId = request.ServiceId, ServiceName = CleanOptional(request.ServiceName), LeadSource = CleanOptional(request.LeadSource) ?? "Website",
+            PropertyType = request.PropertyType.Trim(), PreferredDate = request.PreferredDate,
             PreferredTime = request.PreferredTime?.Trim(), ProblemDescription = request.ProblemDescription.Trim(),
             Status = ServiceRequestStatus.New, CustomerUserId = customerUserId
         };
@@ -93,6 +149,71 @@ public class ServiceRequestsController(AppDbContext db) : ControllerBase
         }
 
         return userId;
+    }
+
+    private static AdminServiceRequestResponse ToAdminResponse(ServiceRequest request)
+    {
+        return new AdminServiceRequestResponse
+        {
+            Id = request.Id,
+            CustomerUserId = request.CustomerUserId,
+            ServiceName = request.ServiceName,
+            FullName = request.FullName,
+            Phone = request.Phone,
+            Email = request.Email,
+            Address = request.Address,
+            City = request.City,
+            Pincode = request.Pincode,
+            LeadSource = request.LeadSource,
+            PropertyType = request.PropertyType,
+            PreferredDate = request.PreferredDate,
+            PreferredTime = request.PreferredTime,
+            ProblemDescription = request.ProblemDescription,
+            Status = request.Status.ToString(),
+            AdminNote = request.AdminNote,
+            ServiceAmount = request.ServiceAmount,
+            AdvancePaid = request.AdvancePaid,
+            BalanceAmount = request.ServiceAmount.HasValue ? request.ServiceAmount.Value - (request.AdvancePaid ?? 0) : null,
+            PaymentStatus = request.PaymentStatus,
+            PaymentMode = request.PaymentMode,
+            InvoiceNumber = request.InvoiceNumber,
+            CompletedAtUtc = request.CompletedAtUtc,
+            CreatedAtUtc = request.CreatedAtUtc,
+            UpdatedAtUtc = request.UpdatedAtUtc
+        };
+    }
+
+    private static string? CleanOptional(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    }
+
+    private bool IsAdminUser()
+    {
+        if (User.Identity?.IsAuthenticated != true)
+            return false;
+
+        if (User.IsInRole("admin") || User.FindFirstValue("role") == "admin")
+            return true;
+
+        return HasMetadataRole("app_metadata") || HasMetadataRole("user_metadata");
+    }
+
+    private bool HasMetadataRole(string claimType)
+    {
+        var metadata = User.FindFirstValue(claimType);
+        if (string.IsNullOrWhiteSpace(metadata))
+            return false;
+
+        try
+        {
+            using var document = JsonDocument.Parse(metadata);
+            return document.RootElement.TryGetProperty("role", out var role) && role.GetString() == "admin";
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
     }
 
     private Guid? GetAuthenticatedUserId()

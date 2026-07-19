@@ -37,3 +37,13 @@ Public form endpoints:
 POST /api/service-requests
 POST /api/contact-messages
 ```
+
+Customer/admin booking endpoints:
+
+```text
+GET /api/service-requests/my
+GET /api/service-requests/admin
+PATCH /api/service-requests/admin/{id}
+```
+
+Admin booking fields now include lead source, payment status, service amount, advance, balance, payment mode, invoice number and completed date. Use lead source values such as Website, Phone, WhatsApp, Justdial, Referral, Repeat Customer or Other.

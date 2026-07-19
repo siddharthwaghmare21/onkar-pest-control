@@ -19,6 +19,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<User>().HasIndex(user => user.Email).IsUnique();
         modelBuilder.Entity<Service>().HasIndex(service => service.Slug).IsUnique();
         modelBuilder.Entity<ServiceRequest>().HasIndex(request => request.Status);
+        modelBuilder.Entity<ServiceRequest>().HasIndex(request => request.LeadSource);
+        modelBuilder.Entity<ServiceRequest>().HasIndex(request => request.PaymentStatus);
         modelBuilder.Entity<Offer>().HasIndex(offer => new { offer.IsActive, offer.StartsAtUtc, offer.EndsAtUtc });
         modelBuilder.Entity<Review>().HasIndex(review => review.IsApproved);
         modelBuilder.Entity<GalleryItem>().HasIndex(item => new { item.IsActive, item.DisplayOrder });
