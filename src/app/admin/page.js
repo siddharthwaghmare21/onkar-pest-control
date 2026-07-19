@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { redirect } from "next/navigation";
 import AdminBookingsManager from "@/components/AdminBookingsManager";
+import AdminServicesManager from "@/components/AdminServicesManager";
 import LogoutButton from "@/components/LogoutButton";
 import PanelSearch from "@/components/PanelSearch";
 import ProfileMenu from "@/components/ProfileMenu";
@@ -87,6 +88,25 @@ async function getAdminRequests(supabase) {
   }
 }
 
+async function getAdminServices(supabase) {
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+
+  if (!token) return { services: [], error: "Admin session token is not available yet." };
+
+  try {
+    const response = await fetch(`${api}/api/services/admin`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    });
+
+    if (!response.ok) return { services: [], error: "Could not load service rates from API." };
+    return { services: await response.json(), error: "" };
+  } catch {
+    return { services: [], error: "Backend API is not running or is not reachable." };
+  }
+}
+
 function getAdminStats(requests) {
   const pendingPayments = requests.filter((request) => request.paymentStatus !== "Paid").length;
 
@@ -149,13 +169,14 @@ export default async function AdminPage() {
     redirect("/login");
   }
 
-  if (!isAdminUser(user)) {
+  if (!isAdminUser(user, { allowDevelopmentFallback: true })) {
     redirect("/dashboard");
   }
 
   const adminName = user.user_metadata?.full_name || "Admin";
   const initials = adminName.slice(0, 1).toUpperCase();
   const { requests, error: adminDataError } = await getAdminRequests(supabase);
+  const { services, error: servicesError } = await getAdminServices(supabase);
   const stats = getAdminStats(requests);
   const visibleSourceRows = getSourceRows(requests);
   const visibleBookingRows = getBookingRows(requests);
@@ -293,17 +314,14 @@ export default async function AdminPage() {
             <AdminBookingsManager initialRequests={requests} />
           </article>
 
-          <article className="admin-panel" id="services-rates">
+          <article className="admin-panel wide admin-manager-panel" id="services-rates">
             <div className="admin-panel-head">
               <h2>Services & Rates</h2>
               <IndianRupee size={20} />
             </div>
-            <p className="admin-muted">My suggestion: keep pricing here, not under Accounts. Next we can add rate add/update/delete for each service.</p>
-            <div className="accounting-strip single">
-              <span>Service</span>
-              <span>Base Rate</span>
-              <span>Offer Rate</span>
-            </div>
+            {servicesError && <div className="form-message error" role="alert">{servicesError}</div>}
+            <p className="admin-muted">Rates should live here, separate from Accounts. Accounts can stay for profile/login settings later.</p>
+            <AdminServicesManager initialServices={services} />
           </article>
 
           <article className="admin-panel" id="offers">

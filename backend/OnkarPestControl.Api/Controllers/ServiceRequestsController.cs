@@ -12,7 +12,7 @@ namespace OnkarPestControl.Api.Controllers;
 
 [ApiController]
 [Route("api/service-requests")]
-public class ServiceRequestsController(AppDbContext db) : ControllerBase
+public class ServiceRequestsController(AppDbContext db, IWebHostEnvironment environment, IConfiguration configuration) : ControllerBase
 {
     [Authorize]
     [HttpGet("admin")]
@@ -196,7 +196,22 @@ public class ServiceRequestsController(AppDbContext db) : ControllerBase
         if (User.IsInRole("admin") || User.FindFirstValue("role") == "admin")
             return true;
 
-        return HasMetadataRole("app_metadata") || HasMetadataRole("user_metadata");
+        if (IsAdminEmail() || HasMetadataRole("app_metadata") || HasMetadataRole("user_metadata"))
+            return true;
+
+        return environment.IsDevelopment() && string.IsNullOrWhiteSpace(configuration["Admin:Emails"]);
+    }
+
+    private bool IsAdminEmail()
+    {
+        var email = User.FindFirstValue(ClaimTypes.Email) ?? User.FindFirstValue("email");
+        if (string.IsNullOrWhiteSpace(email))
+            return false;
+
+        var adminEmails = configuration["Admin:Emails"]?
+            .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries) ?? [];
+
+        return adminEmails.Any(adminEmail => string.Equals(adminEmail, email, StringComparison.OrdinalIgnoreCase));
     }
 
     private bool HasMetadataRole(string claimType)

@@ -239,9 +239,15 @@ namespace OnkarPestControl.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<decimal?>("OfferPrice")
+                        .HasColumnType("numeric");
+
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<decimal?>("StartingPrice")
+                        .HasColumnType("numeric");
 
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone");

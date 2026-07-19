@@ -1,6 +1,6 @@
-namespace OnkarPestControl.Api.Domain.Entities;
+namespace OnkarPestControl.Api.Contracts.Services;
 
-public class Service
+public class ServiceAdminResponse
 {
     public Guid Id { get; set; }
     public string NameEnglish { get; set; } = string.Empty;
@@ -8,11 +8,8 @@ public class Service
     public string Slug { get; set; } = string.Empty;
     public string DescriptionEnglish { get; set; } = string.Empty;
     public string DescriptionMarathi { get; set; } = string.Empty;
-    public string? ImageUrl { get; set; }
     public decimal? StartingPrice { get; set; }
     public decimal? OfferPrice { get; set; }
-    public bool IsActive { get; set; } = true;
+    public bool IsActive { get; set; }
     public int DisplayOrder { get; set; }
-    public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
-    public DateTime UpdatedAtUtc { get; set; } = DateTime.UtcNow;
 }

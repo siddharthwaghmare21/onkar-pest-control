@@ -36,7 +36,7 @@ export async function proxy(request) {
     return NextResponse.redirect(loginUrl);
   }
 
-  if (user && isProtectedAdminRoute && !isAdminUser(user)) {
+  if (user && isProtectedAdminRoute && !isAdminUser(user, { allowDevelopmentFallback: true })) {
     const dashboardUrl = new URL("/dashboard", request.url);
     return NextResponse.redirect(dashboardUrl);
   }
