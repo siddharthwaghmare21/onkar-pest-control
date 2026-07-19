@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { isAdminUser } from "@/lib/auth/roles";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { hasSupabasePublicEnv } from "@/lib/supabase/config";
 
@@ -24,7 +25,7 @@ export default function LoginForm() {
     const password = String(formData.get("password") || "");
 
     const supabase = createSupabaseBrowserClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
       setState({ status: "error", message: error.message });
@@ -33,7 +34,7 @@ export default function LoginForm() {
 
     setState({ status: "success", message: "Signed in successfully. Redirecting..." });
     router.refresh();
-    router.push("/dashboard");
+    router.push(isAdminUser(data.user) ? "/admin" : "/dashboard");
   }
 
   return (

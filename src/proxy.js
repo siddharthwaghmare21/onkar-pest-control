@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
+import { isAdminUser } from "@/lib/auth/roles";
 
 export async function proxy(request) {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
@@ -27,14 +28,22 @@ export async function proxy(request) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user && request.nextUrl.pathname.startsWith("/dashboard")) {
+  const isProtectedCustomerRoute = request.nextUrl.pathname.startsWith("/dashboard");
+  const isProtectedAdminRoute = request.nextUrl.pathname.startsWith("/admin");
+
+  if (!user && (isProtectedCustomerRoute || isProtectedAdminRoute)) {
     const loginUrl = new URL("/login", request.url);
     return NextResponse.redirect(loginUrl);
+  }
+
+  if (user && isProtectedAdminRoute && !isAdminUser(user)) {
+    const dashboardUrl = new URL("/dashboard", request.url);
+    return NextResponse.redirect(dashboardUrl);
   }
 
   return response;
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: ["/dashboard/:path*", "/admin/:path*"],
 };

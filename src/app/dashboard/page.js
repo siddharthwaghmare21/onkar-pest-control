@@ -142,7 +142,7 @@ export default async function Dashboard() {
                 <div>
                   <span>{booking.status}</span>
                   <h3>{getServiceLabel(booking.problemDescription)}</h3>
-                  <p>{booking.propertyType} • {booking.preferredDate || "Date pending"} • {booking.preferredTime || "Time pending"}</p>
+                  <p>{booking.propertyType} - {booking.preferredDate || "Date pending"} - {booking.preferredTime || "Time pending"}</p>
                 </div>
                 <small>{new Date(booking.createdAtUtc).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</small>
               </article>
