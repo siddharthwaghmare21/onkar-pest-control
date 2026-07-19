@@ -1,4 +1,6 @@
 import "./globals.css";
+import ScrollTopButton from "@/components/ScrollTopButton";
+import ThemeProvider from "@/components/ThemeProvider";
 
 export const metadata = {
   title: "Onkar Pest Control | Smart Protection. Safer Spaces.",
@@ -7,6 +9,13 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en"><body>{children}</body></html>
+    <html lang="en" suppressHydrationWarning>
+      <body>
+        <ThemeProvider>
+          {children}
+          <ScrollTopButton />
+        </ThemeProvider>
+      </body>
+    </html>
   );
 }

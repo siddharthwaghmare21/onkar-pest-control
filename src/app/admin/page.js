@@ -1,8 +1,9 @@
-import { BarChart3, CalendarClock, Gift, Images, Inbox, ShieldCheck } from "lucide-react";
+import { BarChart3, CalendarClock, CreditCard, Gift, Images, Inbox, Megaphone, ShieldCheck } from "lucide-react";
 import { redirect } from "next/navigation";
 import FloatingActions from "@/components/FloatingActions";
 import LogoutButton from "@/components/LogoutButton";
 import PageHero from "@/components/PageHero";
+import PanelSearch from "@/components/PanelSearch";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 import { isAdminUser } from "@/lib/auth/roles";
@@ -60,7 +61,10 @@ export default async function AdminPage() {
             <h2>Design-ready admin panel shell.</h2>
             <p>The access control is in place. Once you share the admin design, we will replace this placeholder with the full working panel.</p>
           </div>
-          <LogoutButton />
+          <div className="panel-actions">
+            <PanelSearch placeholder="Search bookings, customer, phone..." />
+            <LogoutButton />
+          </div>
         </section>
 
         <section className="dashboard-grid admin-grid">
@@ -93,6 +97,18 @@ export default async function AdminPage() {
             <span>Reports</span>
             <h3>Overview</h3>
             <p>See lead volume, active bookings and conversion summary.</p>
+          </article>
+          <article className="dashboard-card">
+            <Megaphone size={25} />
+            <span>Lead Sources</span>
+            <h3>Justdial</h3>
+            <p>Track Website, WhatsApp, phone, Justdial and referral enquiries separately.</p>
+          </article>
+          <article className="dashboard-card">
+            <CreditCard size={25} />
+            <span>Billing</span>
+            <h3>Accounts</h3>
+            <p>Plan revenue, advance, balance, payment mode and invoice tracking.</p>
           </article>
           <article className="dashboard-card">
             <ShieldCheck size={25} />

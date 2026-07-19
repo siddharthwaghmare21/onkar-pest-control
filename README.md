@@ -1,4 +1,13 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Onkar Pest Control
+
+Public website, customer dashboard, and admin panel foundation for Onkar Pest Control.
+
+## Roadmap Additions
+
+- Lead source tracking: Website, Phone, WhatsApp, Justdial, Referral, Repeat Customer, Other.
+- Billing/accounting fields: service amount, advance paid, balance, payment status, payment mode, invoice number, completed date.
+- Reports: Website vs Justdial enquiries, confirmed work, completed revenue, pending collections.
+- UX: day/night mode, go-to-top button, panel search, profile menu, and mobile-friendly navigation.
 
 ## Getting Started
 

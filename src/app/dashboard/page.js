@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import FloatingActions from "@/components/FloatingActions";
 import LogoutButton from "@/components/LogoutButton";
 import PageHero from "@/components/PageHero";
+import PanelSearch from "@/components/PanelSearch";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -90,7 +91,10 @@ export default async function Dashboard() {
             <h2>Your service tracking is live.</h2>
             <p>Bookings made while signed in will appear here with status, preferred visit time and request details.</p>
           </div>
-          <LogoutButton />
+          <div className="panel-actions">
+            <PanelSearch placeholder="Search your bookings..." />
+            <LogoutButton />
+          </div>
         </section>
 
         <section className="dashboard-grid">
