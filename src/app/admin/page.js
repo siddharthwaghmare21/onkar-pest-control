@@ -5,6 +5,7 @@ import {
   CheckCircle2,
   CreditCard,
   Gift,
+  IndianRupee,
   Images,
   Inbox,
   LayoutDashboard,
@@ -17,6 +18,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import { redirect } from "next/navigation";
+import AdminBookingsManager from "@/components/AdminBookingsManager";
 import LogoutButton from "@/components/LogoutButton";
 import PanelSearch from "@/components/PanelSearch";
 import ProfileMenu from "@/components/ProfileMenu";
@@ -35,6 +37,7 @@ const menuItems = [
   ["Bookings", Inbox],
   ["Customers", UsersRound],
   ["Messages", MessageSquareText],
+  ["Services & Rates", IndianRupee],
   ["Offers", Gift],
   ["Gallery", Images],
   ["Reports", BarChart3],
@@ -169,7 +172,7 @@ export default async function AdminPage() {
         <nav className="admin-menu" aria-label="Admin menu">
           <small>MENU</small>
           {menuItems.map(([label, Icon], index) => (
-            <a className={index === 0 ? "active" : ""} href={`#${label.toLowerCase()}`} key={label}>
+            <a className={index === 0 ? "active" : ""} href={`#${label.toLowerCase().replaceAll(" & ", "-").replaceAll(" ", "-")}`} key={label}>
               <Icon size={18} /> {label}
             </a>
           ))}
@@ -279,6 +282,27 @@ export default async function AdminPage() {
                   <strong className={statusClass(status)}>{status}</strong>
                 </div>
               ))}
+            </div>
+          </article>
+
+          <article className="admin-panel wide admin-manager-panel" id="booking-management">
+            <div className="admin-panel-head">
+              <h2>Booking Management</h2>
+              <span>Status, source and billing</span>
+            </div>
+            <AdminBookingsManager initialRequests={requests} />
+          </article>
+
+          <article className="admin-panel" id="services-rates">
+            <div className="admin-panel-head">
+              <h2>Services & Rates</h2>
+              <IndianRupee size={20} />
+            </div>
+            <p className="admin-muted">My suggestion: keep pricing here, not under Accounts. Next we can add rate add/update/delete for each service.</p>
+            <div className="accounting-strip single">
+              <span>Service</span>
+              <span>Base Rate</span>
+              <span>Offer Rate</span>
             </div>
           </article>
 

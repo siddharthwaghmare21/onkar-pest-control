@@ -14,7 +14,6 @@ const links = [
   ["Gallery", "/gallery"],
   ["Reviews", "/reviews"],
   ["Contact", "/contact"],
-  ["Account", "/dashboard"],
 ];
 
 export default function SiteHeader() {
