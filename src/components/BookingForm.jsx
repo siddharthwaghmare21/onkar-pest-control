@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { hasSupabasePublicEnv } from "@/lib/supabase/config";
 
 const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5157";
 
@@ -19,9 +21,19 @@ export default function BookingForm() {
     delete body.serviceName;
 
     try {
+      const headers = { "Content-Type": "application/json" };
+
+      if (hasSupabasePublicEnv()) {
+        const supabase = createSupabaseBrowserClient();
+        const { data } = await supabase.auth.getSession();
+        if (data.session?.access_token) {
+          headers.Authorization = `Bearer ${data.session.access_token}`;
+        }
+      }
+
       const response = await fetch(`${api}/api/service-requests`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify(body),
       });
 

@@ -1,4 +1,7 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using OnkarPestControl.Api.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +12,29 @@ builder.Services.AddControllers();
 var frontendOrigin = builder.Configuration["FrontendOrigin"] ?? "http://localhost:3000";
 builder.Services.AddCors(options => options.AddPolicy("frontend", policy => policy.WithOrigins(frontendOrigin).AllowAnyHeader().AllowAnyMethod()));
 
+var supabaseUrl = builder.Configuration["Supabase:Url"];
+var supabaseJwtSecret = builder.Configuration["Supabase:JwtSecret"];
+var supabaseAudience = builder.Configuration["Supabase:Audience"] ?? "authenticated";
+var authConfigured = !string.IsNullOrWhiteSpace(supabaseUrl) && !string.IsNullOrWhiteSpace(supabaseJwtSecret);
+
+if (authConfigured)
+{
+    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = $"{supabaseUrl!.TrimEnd('/')}/auth/v1",
+                ValidateAudience = true,
+                ValidAudience = supabaseAudience,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(supabaseJwtSecret!))
+            };
+        });
+}
+
 var supabaseConnection = builder.Configuration.GetConnectionString("Supabase");
 if (!string.IsNullOrWhiteSpace(supabaseConnection))
 {
@@ -16,6 +42,10 @@ if (!string.IsNullOrWhiteSpace(supabaseConnection))
 }
 var app = builder.Build();
 app.UseCors("frontend");
+if (authConfigured)
+{
+    app.UseAuthentication();
+}
 
 if (!string.IsNullOrWhiteSpace(supabaseConnection))
 {

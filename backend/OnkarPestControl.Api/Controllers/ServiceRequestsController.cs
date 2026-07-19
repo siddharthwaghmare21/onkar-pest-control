@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OnkarPestControl.Api.Contracts.ServiceRequests;
@@ -17,16 +18,55 @@ public class ServiceRequestsController(AppDbContext db) : ControllerBase
         if (request.ServiceId.HasValue && !await db.Services.AnyAsync(x => x.Id == request.ServiceId && x.IsActive, cancellationToken))
             return BadRequest(new { message = "Selected service is not available." });
 
+        var customerUserId = await EnsureCustomerUserAsync(request, cancellationToken);
+
         var entity = new ServiceRequest
         {
             FullName = request.FullName.Trim(), Phone = request.Phone.Trim(), Email = request.Email?.Trim(),
             Address = request.Address.Trim(), City = request.City.Trim(), Pincode = request.Pincode.Trim(),
             ServiceId = request.ServiceId, PropertyType = request.PropertyType.Trim(), PreferredDate = request.PreferredDate,
             PreferredTime = request.PreferredTime?.Trim(), ProblemDescription = request.ProblemDescription.Trim(),
-            Status = ServiceRequestStatus.New
+            Status = ServiceRequestStatus.New, CustomerUserId = customerUserId
         };
         db.ServiceRequests.Add(entity);
         await db.SaveChangesAsync(cancellationToken);
         return Created($"/api/service-requests/{entity.Id}", new { id = entity.Id, status = "new" });
+    }
+
+    private async Task<Guid?> EnsureCustomerUserAsync(CreateServiceRequestRequest request, CancellationToken cancellationToken)
+    {
+        if (User.Identity?.IsAuthenticated != true)
+            return null;
+
+        var subject = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        if (!Guid.TryParse(subject, out var userId))
+            return null;
+
+        var email = User.FindFirstValue(ClaimTypes.Email) ?? User.FindFirstValue("email") ?? request.Email;
+        var existingUser = await db.Users.FindAsync([userId], cancellationToken);
+        if (existingUser is null)
+        {
+            db.Users.Add(new User
+            {
+                Id = userId,
+                FullName = request.FullName.Trim(),
+                Phone = request.Phone.Trim(),
+                Email = email?.Trim() ?? string.Empty,
+                Address = request.Address.Trim(),
+                City = request.City.Trim(),
+                Role = "customer"
+            });
+        }
+        else
+        {
+            existingUser.FullName = request.FullName.Trim();
+            existingUser.Phone = request.Phone.Trim();
+            existingUser.Email = email?.Trim() ?? existingUser.Email;
+            existingUser.Address = request.Address.Trim();
+            existingUser.City = request.City.Trim();
+            existingUser.UpdatedAtUtc = DateTime.UtcNow;
+        }
+
+        return userId;
     }
 }
