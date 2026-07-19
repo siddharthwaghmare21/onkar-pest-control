@@ -1,2 +1,21 @@
-import Link from "next/link"; import SiteHeader from "@/components/SiteHeader"; import SiteFooter from "@/components/SiteFooter"; import PageHero from "@/components/PageHero";
-export default function Register(){return <><SiteHeader/><PageHero eyebrow="CREATE ACCOUNT" title={<>Stay in the <em>loop.</em></>} copy="Registration will be connected during the account phase."/><main className="container form-wrap"><form className="booking-form narrow-form"><label>Full Name<input placeholder="Your name"/></label><label>Phone Number<input placeholder="10-digit mobile number"/></label><label>Email<input type="email" placeholder="you@example.com"/></label><label>Password<input type="password" placeholder="Create a password"/></label><button className="button button-primary">Create Account →</button><p>Already registered? <Link href="/login" className="text-link">Sign in</Link></p></form></main><SiteFooter/></>}
+import SiteHeader from "@/components/SiteHeader";
+import SiteFooter from "@/components/SiteFooter";
+import PageHero from "@/components/PageHero";
+import RegisterForm from "@/components/RegisterForm";
+
+export default function Register() {
+  return (
+    <>
+      <SiteHeader />
+      <PageHero
+        eyebrow="CREATE ACCOUNT"
+        title={<>Stay in the <em>loop.</em></>}
+        copy="Create your customer account for future discounts, offers and service tracking."
+      />
+      <main className="container form-wrap">
+        <RegisterForm />
+      </main>
+      <SiteFooter />
+    </>
+  );
+}

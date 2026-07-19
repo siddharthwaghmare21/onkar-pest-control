@@ -1,2 +1,21 @@
-import Link from "next/link"; import SiteHeader from "@/components/SiteHeader"; import SiteFooter from "@/components/SiteFooter"; import PageHero from "@/components/PageHero";
-export default function Login(){return <><SiteHeader/><PageHero eyebrow="CUSTOMER LOGIN" title={<>Welcome <em>back.</em></>} copy="Sign in later to view your service requests and history."/><main className="container form-wrap"><form className="booking-form narrow-form"><label>Email<input type="email" placeholder="you@example.com"/></label><label>Password<input type="password" placeholder="Your password"/></label><button className="button button-primary">Sign In →</button><p>New customer? <Link href="/register" className="text-link">Create an account</Link></p></form></main><SiteFooter/></>}
+import SiteHeader from "@/components/SiteHeader";
+import SiteFooter from "@/components/SiteFooter";
+import PageHero from "@/components/PageHero";
+import LoginForm from "@/components/LoginForm";
+
+export default function Login() {
+  return (
+    <>
+      <SiteHeader />
+      <PageHero
+        eyebrow="CUSTOMER LOGIN"
+        title={<>Welcome <em>back.</em></>}
+        copy="Sign in to manage your Onkar Pest Control account."
+      />
+      <main className="container form-wrap">
+        <LoginForm />
+      </main>
+      <SiteFooter />
+    </>
+  );
+}
