@@ -1,7 +1,12 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { hasSupabasePublicEnv } from "@/lib/supabase/config";
 
 export async function createSupabaseServerClient() {
+  if (!hasSupabasePublicEnv()) {
+    return null;
+  }
+
   const cookieStore = await cookies();
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,

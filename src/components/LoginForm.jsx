@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { hasSupabasePublicEnv } from "@/lib/supabase/config";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -13,7 +14,7 @@ export default function LoginForm() {
     event.preventDefault();
     setState({ status: "sending", message: "" });
 
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    if (!hasSupabasePublicEnv()) {
       setState({ status: "error", message: "Supabase keys are missing. Add them in .env.local first." });
       return;
     }
@@ -32,7 +33,7 @@ export default function LoginForm() {
 
     setState({ status: "success", message: "Signed in successfully. Redirecting..." });
     router.refresh();
-    router.push("/");
+    router.push("/dashboard");
   }
 
   return (

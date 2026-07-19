@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { hasSupabasePublicEnv } from "@/lib/supabase/config";
 
 export default function RegisterForm() {
   const [state, setState] = useState({ status: "idle", message: "" });
@@ -11,7 +12,7 @@ export default function RegisterForm() {
     event.preventDefault();
     setState({ status: "sending", message: "" });
 
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    if (!hasSupabasePublicEnv()) {
       setState({ status: "error", message: "Supabase keys are missing. Add them in .env.local first." });
       return;
     }
