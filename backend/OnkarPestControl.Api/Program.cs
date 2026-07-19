@@ -52,6 +52,7 @@ if (!string.IsNullOrWhiteSpace(supabaseConnection))
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.MigrateAsync();
     await ServiceCatalogSeeder.SeedAsync(db);
 }
 
