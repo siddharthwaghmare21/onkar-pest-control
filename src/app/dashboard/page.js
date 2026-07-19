@@ -9,6 +9,38 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
+const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5157";
+
+async function getCustomerBookings(supabase) {
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+
+  if (!token) {
+    return { bookings: [], error: "Session token is not available yet." };
+  }
+
+  try {
+    const response = await fetch(`${api}/api/service-requests/my`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return { bookings: [], error: "Could not load your booking history right now." };
+    }
+
+    return { bookings: await response.json(), error: "" };
+  } catch {
+    return { bookings: [], error: "Backend API is not running or is not reachable." };
+  }
+}
+
+function getServiceLabel(problemDescription) {
+  const marker = "Selected service:";
+  if (!problemDescription?.includes(marker)) return "Service request";
+  return problemDescription.split(marker).at(-1).trim();
+}
+
 export default async function Dashboard() {
   const supabase = await createSupabaseServerClient();
 
@@ -40,6 +72,8 @@ export default async function Dashboard() {
 
   const fullName = user.user_metadata?.full_name || "Customer";
   const phone = user.user_metadata?.phone || "Not added";
+  const { bookings, error: bookingsError } = await getCustomerBookings(supabase);
+  const activeBookings = bookings.filter((booking) => !["Completed", "Cancelled"].includes(booking.status)).length;
 
   return (
     <>
@@ -53,8 +87,8 @@ export default async function Dashboard() {
         <section className="dashboard-top">
           <div>
             <p className="section-kicker">ACCOUNT <span /></p>
-            <h2>Service tracking will live here.</h2>
-            <p>For now, your login session is connected. Next we will link bookings to registered customers and show request history here.</p>
+            <h2>Your service tracking is live.</h2>
+            <p>Bookings made while signed in will appear here with status, preferred visit time and request details.</p>
           </div>
           <LogoutButton />
         </section>
@@ -70,8 +104,8 @@ export default async function Dashboard() {
           <article className="dashboard-card">
             <CalendarCheck size={25} />
             <span>Bookings</span>
-            <h3>Coming next</h3>
-            <p>Registered user bookings will be attached to this account in the next backend step.</p>
+            <h3>{bookings.length}</h3>
+            <p>{activeBookings} active request{activeBookings === 1 ? "" : "s"} linked to this account.</p>
           </article>
           <article className="dashboard-card">
             <Gift size={25} />
@@ -85,6 +119,35 @@ export default async function Dashboard() {
             <h3>Festival offers</h3>
             <p>Admin-created offers will appear here once the admin panel phase starts.</p>
           </article>
+        </section>
+
+        <section className="dashboard-history">
+          <div className="dashboard-section-head">
+            <p className="section-kicker">SERVICE REQUESTS <span /></p>
+            <h2>Booking History</h2>
+          </div>
+
+          {bookingsError && <p className="form-message error" role="alert">{bookingsError}</p>}
+
+          {!bookingsError && bookings.length === 0 && (
+            <div className="dashboard-empty">
+              <h3>No bookings yet</h3>
+              <p>Book a service while signed in, and your request will show here automatically.</p>
+            </div>
+          )}
+
+          <div className="booking-history-list">
+            {bookings.map((booking) => (
+              <article className="booking-history-item" key={booking.id}>
+                <div>
+                  <span>{booking.status}</span>
+                  <h3>{getServiceLabel(booking.problemDescription)}</h3>
+                  <p>{booking.propertyType} • {booking.preferredDate || "Date pending"} • {booking.preferredTime || "Time pending"}</p>
+                </div>
+                <small>{new Date(booking.createdAtUtc).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</small>
+              </article>
+            ))}
+          </div>
         </section>
       </main>
       <SiteFooter />
