@@ -48,6 +48,9 @@ if (authConfigured)
     app.UseAuthentication();
 }
 
+// Serve static files (uploads) from wwwroot
+app.UseStaticFiles();
+
 if (!string.IsNullOrWhiteSpace(supabaseConnection))
 {
     using var scope = app.Services.CreateScope();
