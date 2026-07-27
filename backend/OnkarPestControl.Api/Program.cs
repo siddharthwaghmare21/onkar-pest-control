@@ -56,6 +56,19 @@ if (!string.IsNullOrWhiteSpace(supabaseConnection))
     await ServiceCatalogSeeder.SeedAsync(db);
 }
 
+// Safety: require Admin emails in Production to avoid accidentally exposing admin functionality.
+// The environment variable key consumed by ASP.NET Core can be Admin:Emails or Admin__Emails (double-underscore form).
+if (app.Environment.IsProduction())
+{
+    var adminEmails = builder.Configuration["Admin:Emails"] ?? builder.Configuration["Admin__Emails"];
+    if (string.IsNullOrWhiteSpace(adminEmails))
+    {
+        Console.Error.WriteLine("FATAL: Admin emails are not configured. Set Admin__Emails (comma-separated) before starting in Production.");
+        // Exit early to avoid running the app with open admin access.
+        return;
+    }
+}
+
 // Configure the HTTP request pipeline.
 app.UseAuthorization();
 
