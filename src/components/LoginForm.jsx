@@ -7,9 +7,10 @@ import { isAdminUser } from "@/lib/auth/roles";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { hasSupabasePublicEnv } from "@/lib/supabase/config";
 
-export default function LoginForm() {
+export default function LoginForm({ mode = "customer" }) {
   const router = useRouter();
   const [state, setState] = useState({ status: "idle", message: "" });
+  const isAdminMode = mode === "admin";
 
   async function submit(event) {
     event.preventDefault();
@@ -32,9 +33,15 @@ export default function LoginForm() {
       return;
     }
 
+    if (isAdminMode && !isAdminUser(data.user, { allowDevelopmentFallback: true })) {
+      await supabase.auth.signOut();
+      setState({ status: "error", message: "This account does not have admin access." });
+      return;
+    }
+
     setState({ status: "success", message: "Signed in successfully. Redirecting..." });
     router.refresh();
-    router.push(isAdminUser(data.user) ? "/admin" : "/dashboard");
+    router.push(isAdminMode || isAdminUser(data.user, { allowDevelopmentFallback: true }) ? "/admin" : "/dashboard");
   }
 
   return (
@@ -55,9 +62,11 @@ export default function LoginForm() {
           {state.message}
         </p>
       )}
-      <p>
-        New customer? <Link href="/register" className="text-link">Create an account</Link>
-      </p>
+      {!isAdminMode && (
+        <p>
+          New customer? <Link href="/register" className="text-link">Create an account</Link>
+        </p>
+      )}
     </form>
   );
 }

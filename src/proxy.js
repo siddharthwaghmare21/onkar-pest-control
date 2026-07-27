@@ -29,10 +29,11 @@ export async function proxy(request) {
   const { data: { user } } = await supabase.auth.getUser();
 
   const isProtectedCustomerRoute = request.nextUrl.pathname.startsWith("/dashboard");
-  const isProtectedAdminRoute = request.nextUrl.pathname.startsWith("/admin");
+  const isAdminLoginRoute = request.nextUrl.pathname === "/admin/login";
+  const isProtectedAdminRoute = request.nextUrl.pathname.startsWith("/admin") && !isAdminLoginRoute;
 
   if (!user && (isProtectedCustomerRoute || isProtectedAdminRoute)) {
-    const loginUrl = new URL("/login", request.url);
+    const loginUrl = new URL(isProtectedAdminRoute ? "/admin/login" : "/login", request.url);
     return NextResponse.redirect(loginUrl);
   }
 

@@ -179,7 +179,7 @@ export default async function AdminPage() {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    redirect("/admin/login");
   }
 
   if (!isAdminUser(user, { allowDevelopmentFallback: true })) {
