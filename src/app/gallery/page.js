@@ -33,15 +33,10 @@ export default async function Gallery() {
       <SiteHeader />
       <PageHero eyebrow="GALLERY" title={<>Real service. <em>Real care.</em></>} copy="Professional pest-control work across homes, hotels, kitchens and healthcare spaces." />
 
-      <main className="container gallery-grid section-pad">
+      <main className="container section-pad">
         {visible.length === 0 && <p className="empty-state">No gallery items yet.</p>}
 
-        {visible.map((item, index) => (
-          <figure className={`gallery-item gallery-item-${(index % 4) + 1}`} key={item.id}>
-            <div className="gallery-image" style={{ backgroundImage: `url(${item.imageUrl})` }} />
-            <figcaption>{item.captionEnglish || item.captionMarathi}</figcaption>
-          </figure>
-        ))}
+        <GalleryGrid items={visible} />
       </main>
 
       <SiteFooter />
