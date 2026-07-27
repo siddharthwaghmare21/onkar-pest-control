@@ -196,6 +196,15 @@ export default async function AdminPage() {
   const visibleBookingRows = getBookingRows(requests);
   const collectedAmount = requests.reduce((total, request) => total + (request.advancePaid || 0), 0);
 
+  // Fetch a small public gallery preview for admin dashboard
+  let galleryItems = [];
+  try {
+    const galleryRes = await fetch(`${api}/api/gallery`, { cache: "no-store" });
+    if (galleryRes.ok) galleryItems = await galleryRes.json();
+  } catch {
+    galleryItems = [];
+  }
+
   return (
     <main className="admin-workspace">
       <aside className="admin-sidebar">
@@ -354,10 +363,24 @@ export default async function AdminPage() {
               <Images size={20} />
             </div>
             <div className="proof-grid">
-              <span>Hotel</span>
-              <span>Kitchen</span>
-              <span>Hospital</span>
-              <span>Home</span>
+              {/* Server-side preview of public gallery items */}
+              {galleryItems && galleryItems.length > 0 ? (
+                galleryItems.slice(0, 4).map((item, idx) => (
+                  <figure className={`gallery-item gallery-item-${(idx % 4) + 1}`} key={item.id}>
+                    <div className="gallery-image" style={{ backgroundImage: `url(${item.imageUrl})` }} />
+                    <figcaption>{item.captionEnglish || item.captionMarathi}</figcaption>
+                  </figure>
+                ))
+              ) : (
+                <div className="empty-state">
+                  <p>No gallery items yet.</p>
+                </div>
+              )}
+
+              <div className="gallery-preview-actions">
+                <a className="button button-ghost" href="/admin/gallery">Manage Gallery</a>
+                <a className="button button-ghost" href="/gallery">View Public Gallery</a>
+              </div>
             </div>
           </article>
 
