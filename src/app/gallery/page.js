@@ -2,6 +2,7 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import PageHero from "@/components/PageHero";
 import FloatingActions from "@/components/FloatingActions";
+import GalleryGrid from "@/components/GalleryGrid";
 
 export const dynamic = "force-dynamic";
 
