@@ -34,8 +34,11 @@ export default function AdminGalleryManager({ initialItems = [] }) {
   }
 
   async function uploadFile(file) {
+    const url = await uploadFileServer(file);
+    if (url) return url;
+
     if (!hasSupabasePublicEnv()) {
-      setMessage("Supabase keys missing. Cannot upload.");
+      setMessage("Upload failed and Supabase public keys are missing. Cannot upload.");
       return null;
     }
 
@@ -43,7 +46,6 @@ export default function AdminGalleryManager({ initialItems = [] }) {
     const bucket = "gallery";
     setUploading(true);
 
-    // ensure file name unique
     const filename = `${Date.now()}-${file.name}`;
     const { error: uploadError, data } = await supabase.storage.from(bucket).upload(filename, file, { cacheControl: "3600", upsert: false });
     setUploading(false);
@@ -55,6 +57,43 @@ export default function AdminGalleryManager({ initialItems = [] }) {
 
     const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(data.path);
     return publicUrlData.publicUrl;
+  }
+
+  async function uploadFileServer(file) {
+    const token = await getToken();
+    if (!token) return null;
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("captionEnglish", draft.captionEnglish || "");
+    formData.append("captionMarathi", draft.captionMarathi || "");
+    formData.append("displayOrder", String(draft.displayOrder || 0));
+    formData.append("isActive", String(draft.isActive));
+
+    try {
+      const response = await fetch(`${api}/api/gallery/admin/upload`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}));
+        setMessage(errorBody.message || "Server upload failed.");
+        return null;
+      }
+
+      const result = await response.json();
+      return result.imageUrl || null;
+    } catch (error) {
+      setMessage("Server upload failed. Check backend or permissions.");
+      return null;
+    } finally {
+      setUploading(false);
+    }
   }
 
   async function saveItem(isNew) {
@@ -146,13 +185,16 @@ export default function AdminGalleryManager({ initialItems = [] }) {
           <input value={draft.imageUrl} onChange={(e) => updateDraft("imageUrl", e.target.value)} placeholder="https://..." />
         </label>
 
-        <label>Or upload image (Supabase Storage)
+        <label>Or upload image (server upload preferred)
           <div className="upload-row">
             <input type="file" accept="image/*" onChange={handleFileInput} />
             <button type="button" className="button button-ghost" disabled={uploading} onClick={() => document.querySelector('.admin-gallery-form input[type=file]').click()}>
               <Upload size={14} /> {uploading ? "Uploading..." : "Choose file"}
             </button>
           </div>
+          <p className="admin-muted" style={{ marginTop: 8 }}>
+            Uploads now use server-side storage when possible. If that fails, Supabase Storage is used as a fallback.
+          </p>
         </label>
 
         <label>Caption (English)
