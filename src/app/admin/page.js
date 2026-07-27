@@ -14,11 +14,11 @@ import {
   PhoneCall,
   Settings,
   ShieldCheck,
-  Star,
   UsersRound,
 } from "lucide-react";
 import { redirect } from "next/navigation";
 import AdminBookingsManager from "@/components/AdminBookingsManager";
+import AdminOffersManager from "@/components/AdminOffersManager";
 import AdminServicesManager from "@/components/AdminServicesManager";
 import LogoutButton from "@/components/LogoutButton";
 import PanelSearch from "@/components/PanelSearch";
@@ -57,12 +57,6 @@ const bookingRows = [
   ["Termite inspection", "Sangli Hotel", "Justdial", "Confirmed"],
   ["Hospital pest audit", "City Care", "Phone", "Follow-up"],
   ["Residential service", "Priya Jadhav", "WhatsApp", "Completed"],
-];
-
-const offerRows = [
-  ["Festival Home Care", "15% off", "Draft"],
-  ["Restaurant Monthly Plan", "Package", "Active"],
-  ["First Booking Visit", "No travel charge", "Active"],
 ];
 
 function statusClass(status) {
@@ -104,6 +98,25 @@ async function getAdminServices(supabase) {
     return { services: await response.json(), error: "" };
   } catch {
     return { services: [], error: "Backend API is not running or is not reachable." };
+  }
+}
+
+async function getAdminOffers(supabase) {
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+
+  if (!token) return { offers: [], error: "Admin session token is not available yet." };
+
+  try {
+    const response = await fetch(`${api}/api/offers/admin`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    });
+
+    if (!response.ok) return { offers: [], error: "Could not load offers from API." };
+    return { offers: await response.json(), error: "" };
+  } catch {
+    return { offers: [], error: "Backend API is not running or is not reachable." };
   }
 }
 
@@ -177,6 +190,7 @@ export default async function AdminPage() {
   const initials = adminName.slice(0, 1).toUpperCase();
   const { requests, error: adminDataError } = await getAdminRequests(supabase);
   const { services, error: servicesError } = await getAdminServices(supabase);
+  const { offers, error: offersError } = await getAdminOffers(supabase);
   const stats = getAdminStats(requests);
   const visibleSourceRows = getSourceRows(requests);
   const visibleBookingRows = getBookingRows(requests);
@@ -329,14 +343,9 @@ export default async function AdminPage() {
               <h2>Offers 🎁</h2>
               <Gift size={20} />
             </div>
-            <div className="offer-list">
-              {offerRows.map(([name, type, status]) => (
-                <div key={name}>
-                  <span><Star size={15} /> {name}</span>
-                  <small>{type} - {status}</small>
-                </div>
-              ))}
-            </div>
+            {offersError && <div className="form-message error" role="alert">{offersError}</div>}
+            <p className="admin-muted">Festival, seasonal and signup offers can be managed here without touching the public UI code.</p>
+            <AdminOffersManager initialOffers={offers} />
           </article>
 
           <article className="admin-panel" id="gallery">
